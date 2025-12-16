@@ -12,34 +12,36 @@ from sklearn.impute import SimpleImputer
 
 st.set_page_config(page_title="Fire Weather Index", layout='wide')
 
+# --- Configuration ---
+Pipeline_path = "linear_regression_pipeline.joblib"
 
-def try_load_model(path='linear_regression_pipeline.joblib'):
-    """Attempt to load a joblib model and print full traceback on failure."""
+# -- Function to load the complete pipeline --
+@st.cache_resource
+def load_pipeline():
+
     try:
-        model = joblib.load(path)
-        print("MODEL LOADED OK")
-        print("model type:", type(model))
-        if hasattr(model, "feature_names_in_"):
-            print("model.feature_names_in_ (preview up to 50):", list(getattr(model, "feature_names_in_")[:50]))
-        return model
-    except Exception:
-        tb = traceback.format_exc()
-        print("=== MODEL LOAD FAILED ===")
-        print(tb)
+        pipeline = joblib.load(Pipeline_path)
+        return pipeline
+    
+    except FileNotFoundError:
+        st.error(f"Pipeline file {Pipeline_path} not found. Please check your file.")
+        return None
+    
+    except Exception as e:
+        st.error(f"An error occured while loading the pipeline: {e}")
+        return None
+    
+# -- Streamlit App Interface --
 
-@st._cache_resource
-def load_model_cached(path='linear_regression_pipeline.joblib'):
-    return try_load_model(path)
+def main():
+    st.title("🔥 Algerian Forest FWI Predictor")
+    st.markdown("Predict the **Fire Weather Index (FWI)** value based on daily weather conditions")
 
+    pipeline = load_pipeline()
 
-model = None
+    if pipeline is None:
+        return
+    
+    st.head("Enter Daily Weather Details:")
 
-try:
-    model = load_model_cached()
-except Exception as e:
-    st.error("Model load failed. Check the server logs (Manage app → Logs) for the full traceback.")
-    st.stop()
-
-with st.sidebar:
-    st.title("Fire Weather Index Predictor")
     
