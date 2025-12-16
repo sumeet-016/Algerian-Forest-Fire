@@ -26,3 +26,20 @@ def try_load_model(path='linear_regression_pipeline.joblib'):
         tb = traceback.format_exc()
         print("=== MODEL LOAD FAILED ===")
         print(tb)
+
+@st._cache_resource
+def load_model_cached(path='linear_regression_pipeline.joblib'):
+    return try_load_model(path)
+
+
+model = None
+
+try:
+    model = load_model_cached()
+except Exception as e:
+    st.error("Model load failed. Check the server logs (Manage app → Logs) for the full traceback.")
+    st.stop()
+
+with st.sidebar:
+    st.title("Fire Weather Index Predictor")
+    
